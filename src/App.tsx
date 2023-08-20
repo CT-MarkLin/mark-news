@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Button } from 'antd';
+import { Audio } from './Audio';
 import './App.css';
 
 const getDate = (date: any) => {
@@ -9,24 +11,6 @@ const getDate = (date: any) => {
   return `${year}-${month < 10 ? '0' + month : month}-${
     day < 10 ? '0' + day : day
   }`;
-};
-
-const speech = (content: string) => {
-  return new Promise((resolve) => {
-    const audioObj = new Audio(`https://mark-tts.deno.dev/?text=${content}`);
-    audioObj.addEventListener('loadeddata', () => {
-      audioObj.play();
-      // duration 变量现在存放音频的播放时长（单位秒）
-    });
-    audioObj.addEventListener('ended', () => {
-      resolve(true);
-    });
-    // let speechInstance = new window.SpeechSynthesisUtterance(`${content}`);
-    // speechInstance.onend = () => {
-    //   resolve(true);
-    // };
-    // window.speechSynthesis.speak(speechInstance);
-  });
 };
 
 function App() {
@@ -57,25 +41,8 @@ function App() {
     // window.speechSynthesis.speak(speechInstance);
   }, [data]);
 
-  useEffect(() => {
-    if (!data || !data.title || readIndex === undefined || !date) {
-      return;
-    }
-    speech(`${data.title[readIndex]}。。。${data.content[readIndex]}`).then(
-      () => {
-        setTimeout(() => {
-          if (readIndex < data.title.length) {
-            setReadIndex(readIndex + 1);
-          } else {
-            setDate(date - 1000 * 3600 * 24);
-          }
-        }, 2000);
-      }
-    );
-  }, [readIndex]);
-
   return (
-    <>
+    <div style={{ paddingBottom: '60px', overflowY: 'auto', height: '100vh' }}>
       <div>
         <input
           value={getDate(date)}
@@ -83,15 +50,20 @@ function App() {
           type="date"
         />
         {new Array(20).fill(0).map((_, ind) => (
-          <button
+          <Button
             style={{ marginRight: '1vw' }}
+            type={
+              date === new Date().valueOf() - ind * 1000 * 3600 * 24
+                ? 'primary'
+                : 'default'
+            }
             onClick={() =>
               setDate(new Date().valueOf() - ind * 1000 * 3600 * 24)
             }
             key={ind}
           >
             {getDate(new Date().valueOf() - ind * 1000 * 3600 * 24)}
-          </button>
+          </Button>
         ))}
       </div>
       {data &&
@@ -107,7 +79,23 @@ function App() {
             </div>
           );
         })}
-    </>
+      <div style={{ position: 'fixed', bottom: '0', zIndex: '1', width: "80vw" }}>
+        {date && data?.title && typeof readIndex === 'number' && (
+          <Audio
+            data={`${data?.title[readIndex]}。。。${data?.content[readIndex]}`}
+            onEnd={() => {
+              setTimeout(() => {
+                if (readIndex < data?.title.length) {
+                  setReadIndex(readIndex + 1);
+                } else {
+                  setDate(date - 1000 * 3600 * 24);
+                }
+              }, 2000);
+            }}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
