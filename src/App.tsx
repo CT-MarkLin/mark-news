@@ -15,7 +15,7 @@ const getDate = (date: any) => {
 
 function App() {
   const [date, setDate] = useState<number>();
-  const [readIndex, setReadIndex] = useState<number>();
+  const [readIndex, setReadIndex] = useState<number>(0);
   const [data, setData] = useState<{ title: any[]; content: any[] }>();
 
   useEffect(() => {
@@ -30,16 +30,16 @@ function App() {
     });
   }, [date]);
 
-  useEffect(() => {
-    if (!data || !data.title) {
-      return;
-    }
-    setReadIndex(0);
-    // let speechInstance = new window.SpeechSynthesisUtterance(
-    //   `${data.title[0]}。。。${data.content[0]}`
-    // );
-    // window.speechSynthesis.speak(speechInstance);
-  }, [data]);
+  // useEffect(() => {
+  //   if (!data || !data.title) {
+  //     return;
+  //   }
+  //   setReadIndex(0);
+  //   // let speechInstance = new window.SpeechSynthesisUtterance(
+  //   //   `${data.title[0]}。。。${data.content[0]}`
+  //   // );
+  //   // window.speechSynthesis.speak(speechInstance);
+  // }, [data]);
 
   return (
     <div style={{ paddingBottom: '60px', overflowY: 'auto', height: '100vh' }}>
@@ -57,9 +57,10 @@ function App() {
                 ? 'primary'
                 : 'default'
             }
-            onClick={() =>
+            onClick={() =>{
+              setReadIndex(0);
               setDate(new Date().valueOf() - ind * 1000 * 3600 * 24)
-            }
+            }}
             key={ind}
           >
             {getDate(new Date().valueOf() - ind * 1000 * 3600 * 24)}
@@ -91,6 +92,7 @@ function App() {
                 if (readIndex < data?.title.length) {
                   setReadIndex(readIndex + 1);
                 } else {
+                  setReadIndex(0);
                   setDate(date - 1000 * 3600 * 24);
                 }
               }, 2000);
