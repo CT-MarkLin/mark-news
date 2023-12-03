@@ -79,10 +79,13 @@ function App() {
             </div>
           );
         })}
-      <div style={{ position: 'fixed', bottom: '0', zIndex: '1', width: "80vw" }}>
+      <div
+        style={{ position: 'fixed', bottom: '0', zIndex: '1', width: '80vw' }}
+      >
         {date && data?.title && typeof readIndex === 'number' && (
           <Audio
             data={`${data?.title[readIndex]}。。。${data?.content[readIndex]}`}
+            index={readIndex}
             onEnd={() => {
               setTimeout(() => {
                 if (readIndex < data?.title.length) {

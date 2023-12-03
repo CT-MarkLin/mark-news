@@ -2,37 +2,40 @@ import { FC, useEffect, useRef, useState } from 'react';
 
 interface IAudio {
   data: string;
-  onEnd: () => void;
+  index: number;
+  onEnd: (index: number) => void;
 }
 
-export const Audio: FC<IAudio> = ({ data, onEnd }) => {
+const cache: any = {};
+
+export const Audio: FC<IAudio> = ({ data, index, onEnd }) => {
   const [snippets, setSnippets] = useState<string[]>([]);
   const [readIndex, setReadIndex] = useState<number>(0);
 
   const audioRef = useRef<HTMLMediaElement>(null);
   useEffect(() => {
+    const audioObj = audioRef.current;
+    if (!audioObj) {
+      return;
+    }
+    clearInterval(cache.timer)
+    cache.timer = setInterval(() => {
+      if (audioObj.ended) {
+        return
+      }
+      audioObj.play();
+    }, 1000)
+    return () => clearInterval(cache.timer)
+  }, [audioRef])
+  useEffect(() => {
     if (!data || !audioRef.current) {
       return;
     }
-    console.log({ snippets });
+    console.log({ snippets, readIndex });
     const url = `https://mark-tts.deno.dev/?text=${snippets[readIndex]}`;
     const audioObj = audioRef.current;
-    audioObj.pause();
+    // audioObj.pause();
     audioObj.src = url;
-    audioObj.addEventListener('loadeddata', () => {
-      audioObj.play();
-      // duration 变量现在存放音频的播放时长（单位秒）
-    });
-    audioObj.addEventListener('ended', () => {
-      if (readIndex === snippets.length - 1) {
-        onEnd();
-        return;
-      }
-      setReadIndex(readIndex + 1);
-    });
-    audioObj.addEventListener('error', () => {
-      onEnd();
-    });
   }, [audioRef, snippets, readIndex]);
 
   useEffect(() => {
@@ -65,7 +68,22 @@ export const Audio: FC<IAudio> = ({ data, onEnd }) => {
 
   return (
     <>
-      <audio style={{ width: '100%' }} ref={audioRef} controls />
+      <audio
+        autoPlay
+        style={{ width: '100%' }}
+        ref={audioRef}
+        controls
+        onEnded={() => {
+          if (readIndex === snippets.length - 1) {
+            onEnd(index);
+            return;
+          }
+          setReadIndex(readIndex + 1);
+        }}
+        onError={() => {
+          onEnd(index);
+        }}
+      />
     </>
   );
 };
