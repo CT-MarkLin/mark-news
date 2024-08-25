@@ -47,7 +47,7 @@ export const Audio: FC<IAudio> = ({ data, index, onEnd }) => {
       setReadIndex(0);
     } else {
       const paragraphs = data.split('\n');
-      const senteance = paragraphs.flatMap((item) => item.split('。'));
+      const senteance = paragraphs.flatMap((item) => item.split(/[。？]/));
       let temp = '';
       let result: string[] = [];
       for (let i = 0; i < senteance.length; i++) {
@@ -55,6 +55,9 @@ export const Audio: FC<IAudio> = ({ data, index, onEnd }) => {
           (temp + senteance[i]).length >= maxLen ||
           i === senteance.length - 1
         ) {
+          if (i === senteance.length - 1) {
+            temp += `。${senteance[i]}`
+          }
           result.push(temp);
           temp = senteance[i];
           continue;
